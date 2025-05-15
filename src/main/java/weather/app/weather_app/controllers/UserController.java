@@ -2,13 +2,12 @@ package weather.app.weather_app.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import weather.app.weather_app.dto.UserResponse;
 import weather.app.weather_app.dto.WeatherResponse;
 import weather.app.weather_app.models.Location;
 import weather.app.weather_app.models.User;
@@ -19,55 +18,61 @@ import weather.app.weather_app.services.UserService;
 import java.util.List;
 import java.util.UUID;
 
+import static weather.app.weather_app.utils.AuthUtils.COOKIE_NAME;
+import static weather.app.weather_app.utils.AuthUtils.SIGN_IN_URL;
+
 @Controller
+@RequiredArgsConstructor
 public class UserController {
-    public static final String COOKIE_NAME = "WEATHER_SESSION_ID";
     private final UserService userService;
     private final SessionService sessionService;
     private final CityService cityService;
 
-    public UserController(UserService userService, SessionService sessionService, CityService cityService) {
-        this.userService = userService;
-        this.sessionService = sessionService;
-        this.cityService = cityService;
-    }
-
     @GetMapping("/sign-up")
-    public String signUpPage(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
-        if (sessionId != null) return "redirect:/";
+    public String signUp(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
+        if (sessionId != null) {
+            return "redirect:/";
+        }
 
         model.addAttribute("user", new User());
         return "registration/sign-up";
     }
 
     @PostMapping("/register")
-    public String registerNewUser(@ModelAttribute @Valid User user, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) return "redirect:/sign-up-with-errors";
-        return userService.registerNewUser(user);
+    public String registerNewUser(@ModelAttribute @Valid UserResponse userResponse, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "redirect:/sign-up-with-errors";
+        }
+        return userService.registerNewUser(userResponse);
     }
 
     @GetMapping("/sign-in")
-    public String signInPage(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
-        if (sessionId != null) return "redirect:/";
+    public String signIn(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
+        if (sessionId != null) {
+            return "redirect:/";
+        }
 
         model.addAttribute("user", new User());
         return "login/sign-in";
     }
 
     @PostMapping("/authorization")
-    public String authorizationUser(@ModelAttribute User user, HttpServletResponse response) {
-        User foundUser = userService.authorizationUser(user);
-        if (foundUser == null) return "redirect:/sign-in";
+    public String authorizeUser(@ModelAttribute @Valid UserResponse userResponse, HttpServletResponse response) {
+        User foundUser = userService.authorizeUser(userResponse);
+        if (foundUser == null) {
+            return SIGN_IN_URL;
+        }
 
         response.addCookie(sessionService.createSessionCookie(foundUser));
         return "redirect:/";
     }
 
     @GetMapping("/")
-    public String indexPage(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
-        if (sessionId == null) return "redirect:/sign-in";
+    public String index(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId, Model model) {
         User currentUser = sessionService.getUserBySessionId(sessionId);
-        if (currentUser == null) return "redirect:/sign-in";
+        if (sessionId == null && currentUser == null) {
+            return SIGN_IN_URL;
+        }
 
         List<WeatherResponse> weatherList = cityService.getCitiesWeatherList(currentUser);
         model.addAttribute("user", currentUser);
@@ -77,18 +82,18 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public String logoutPage(@CookieValue(COOKIE_NAME) UUID sessionId, HttpServletResponse response) {
-        response.addCookie(sessionService.deleteSessionCookie());
-        sessionService.deleteSession(sessionId);
-        return "redirect:/sign-in";
+    public String logout(@CookieValue(COOKIE_NAME) UUID sessionId, HttpServletResponse response) {
+        sessionService.deleteSession(sessionId, response);
+        return SIGN_IN_URL;
     }
 
-    @PostMapping("/delete-city")
+    @DeleteMapping("/city")
     public String deleteCity(@CookieValue(value = COOKIE_NAME, required = false) UUID sessionId,
                              @ModelAttribute Location location) {
-        if (sessionId == null) return "redirect:/sign-in";
         User currentUser = sessionService.getUserBySessionId(sessionId);
-        if (currentUser == null) return "redirect:/sign-in";
+        if (sessionId == null && currentUser == null) {
+            return SIGN_IN_URL;
+        }
 
         cityService.deleteCity(currentUser, location);
 
@@ -96,7 +101,7 @@ public class UserController {
     }
 
     @GetMapping("/sign-up-with-errors")
-    public String signUpWithErrorPage() {
+    public String signUpWithError() {
         return "registration/sign-up-with-errors";
     }
 }

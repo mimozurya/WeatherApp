@@ -13,21 +13,17 @@ import lombok.Setter;
 public class Location {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    @Column(name = "name")
     private String name;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @Column(name = "latitude")
     private double latitude;
 
-    @Column(name = "longitude")
     private double longitude;
 
     public Location(String name, double latitude, double longitude) {

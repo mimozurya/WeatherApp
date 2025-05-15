@@ -1,7 +1,7 @@
 package weather.app.weather_app.dao;
 
+import lombok.RequiredArgsConstructor;
 import org.hibernate.SessionFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import weather.app.weather_app.models.Session;
 import weather.app.weather_app.models.User;
@@ -10,12 +10,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class SessionDAO {
     private final SessionFactory sessionFactory;
-
-    public SessionDAO(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
 
     public void saveSession(Session cookieSession) {
         org.hibernate.Session session = sessionFactory.getCurrentSession();
@@ -62,14 +59,5 @@ public class SessionDAO {
         session.getTransaction().commit();
 
         return true;
-    }
-
-    @Scheduled(fixedRate = 86400000)
-    public void deleteExpiredSessions() {
-        String hql = "DELETE FROM Session WHERE expiresAt < :now";
-        sessionFactory.getCurrentSession()
-                .createQuery(hql)
-                .setParameter("now", LocalDateTime.now())
-                .executeUpdate();
     }
 }

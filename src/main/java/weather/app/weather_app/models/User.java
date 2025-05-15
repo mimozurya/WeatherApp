@@ -18,45 +18,35 @@ import java.util.List;
 public class User {
 
     @Id
-    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
-    @Column(name = "login")
     @Size(min = 3)
     private String login;
 
-    @Column(name = "password")
     @Size(min = 3)
     private String password;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
-    private List<Location> locations;
+    private List<Location> locations = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
-    private List<Session> sessions;
+    private List<Session> sessions = new ArrayList<>();
 
-    public User(int id, String login, String password) {
-        this.id = id;
+    public User(String login, String password) {
         this.login = login;
         this.password = password;
     }
 
     public void addSession(Session session) {
-        if (this.sessions == null) {
-            this.sessions = new ArrayList<>();
-        }
-        this.sessions.add(session);
+        sessions.add(session);
         session.setUser(this);
     }
 
     public void addLocation(Location location) {
-        if (this.locations == null) {
-            this.locations = new ArrayList<>();
-        }
-        this.locations.add(location);
+        locations.add(location);
         location.setUser(this);
     }
 }

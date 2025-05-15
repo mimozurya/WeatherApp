@@ -47,8 +47,8 @@ public class CityServiceTest {
 
         //then
         assertEquals(2, result.size());
-        assertEquals("Moscow", result.get(0).getName());
-        assertEquals("RU", result.get(0).getCountry());
+        assertEquals("Moscow", result.get(0).name());
+        assertEquals("RU", result.get(0).country());
     }
 
     @Test

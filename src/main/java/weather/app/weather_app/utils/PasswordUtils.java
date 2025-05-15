@@ -1,9 +1,12 @@
-package weather.app.weather_app.util;
+package weather.app.weather_app.utils;
 
 
 import org.mindrot.jbcrypt.BCrypt;
 
-public class PasswordUtil {
+public class PasswordUtils {
+
+    private PasswordUtils () {}
+
     public static String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }

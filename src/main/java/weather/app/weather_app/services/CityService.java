@@ -1,59 +1,37 @@
 package weather.app.weather_app.services;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import weather.app.weather_app.dao.CityDAO;
 import weather.app.weather_app.dto.CityResponse;
 import weather.app.weather_app.dto.WeatherResponse;
 import weather.app.weather_app.models.Location;
 import weather.app.weather_app.models.User;
+import weather.app.weather_app.services.restclient.OpenWeatherRestClient;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Service
+@RequiredArgsConstructor
 public class CityService {
     private final CityDAO cityDAO;
-    private final RestTemplate restTemplate;
-
-    @Value("${openweathermap.api.key}")
-    private String API_KEY;
-    @Value("${openweathermap.api.url.city}")
-    private String API_CITY_URL;
-    @Value("${openweathermap.api.url.weather}")
-    private String API_WEATHER_URL;
-
-    public CityService(RestTemplate restTemplate, CityDAO cityDAO) {
-        this.restTemplate = restTemplate;
-        this.cityDAO = cityDAO;
-    }
+    private final OpenWeatherRestClient weatherClient;
 
     public List<CityResponse> getCityList(String cityName) {
-        String url = String.format("%s?q=%s&limit=5&appid=%s", API_CITY_URL, cityName, API_KEY);
-        ResponseEntity<CityResponse[]> response = restTemplate.getForEntity(url, CityResponse[].class);
-        return Arrays.asList(Objects.requireNonNull(response.getBody()));
+        return weatherClient.getCityList(cityName);
     }
 
     public void saveCity(User user, CityResponse city) {
-        Location location = new Location(city.getName(), city.getLat(), city.getLon());
+        Location location = new Location(city.name(), city.lat(), city.lon());
         cityDAO.saveCityLocation(user, location);
     }
 
     public List<WeatherResponse> getCitiesWeatherList(User user) {
         return cityDAO.getCitiesCoordinates(user).stream()
-                .map(location -> {
-                    String weatherUrl = String.format("%s?lat=%f&lon=%f&appid=%s",
-                            API_WEATHER_URL, location.getLatitude(), location.getLongitude(), API_KEY
-                    );
-                    ResponseEntity<WeatherResponse> response = restTemplate.getForEntity(weatherUrl, WeatherResponse.class);
-                    return Objects.requireNonNull(response.getBody());
-                }).toList();
+                .map(location -> weatherClient.getWeather(location.getLatitude(), location.getLongitude())).toList();
     }
 
     public void deleteCity(User user, Location location) {
-        cityDAO.deleteCityLocation(user, location);
+        cityDAO.deleteCity(user, location);
     }
 }

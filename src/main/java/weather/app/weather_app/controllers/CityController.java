@@ -1,5 +1,6 @@
 package weather.app.weather_app.controllers;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,23 +12,23 @@ import weather.app.weather_app.services.SessionService;
 import java.util.List;
 import java.util.UUID;
 
+import static weather.app.weather_app.utils.AuthUtils.COOKIE_NAME;
+import static weather.app.weather_app.utils.AuthUtils.SIGN_IN_URL;
+
 @Controller
+@RequiredArgsConstructor
 public class CityController {
     private final SessionService sessionService;
     private final CityService cityService;
 
-    public CityController(SessionService sessionService, CityService cityService) {
-        this.sessionService = sessionService;
-        this.cityService = cityService;
-    }
-
     @GetMapping("/search-results")
     public String searchCities(@RequestParam String city,
-                               @CookieValue(value = UserController.COOKIE_NAME, required = false) UUID sessionId,
+                               @CookieValue(value = COOKIE_NAME, required = false) UUID sessionId,
                                Model model) {
-        if (sessionId == null) return "redirect:/sign-in";
         User currentUser = sessionService.getUserBySessionId(sessionId);
-        if (currentUser == null) return "redirect:/sign-in";
+        if (sessionId == null && currentUser == null) {
+            return SIGN_IN_URL;
+        }
 
         List<CityResponse> cityList = cityService.getCityList(city);
 
@@ -39,10 +40,11 @@ public class CityController {
 
     @PostMapping("/add-location")
     public String addLocationCity(@ModelAttribute("city") CityResponse city,
-                                  @CookieValue(value = UserController.COOKIE_NAME, required = false) UUID sessionId) {
-        if (sessionId == null) return "redirect:/sign-in";
+                                  @CookieValue(value = COOKIE_NAME, required = false) UUID sessionId) {
         User currentUser = sessionService.getUserBySessionId(sessionId);
-        if (currentUser == null) return "redirect:/sign-in";
+        if (sessionId == null && currentUser == null) {
+            return SIGN_IN_URL;
+        }
 
         cityService.saveCity(currentUser, city);
 

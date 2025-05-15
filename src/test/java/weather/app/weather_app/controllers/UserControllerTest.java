@@ -30,36 +30,36 @@ public class UserControllerTest {
     private UserController userController;
 
     @Test
-    void signUpPageTest_sessionIdIsNull_returnsSignUpPage() {
+    void signUpPageTest_sessionIdIsNull_returnsSignUp() {
         // given
         UUID nullSessionId = null;
 
         // when
-        String result = userController.signUpPage(nullSessionId, model);
+        String result = userController.signUp(nullSessionId, model);
 
         // then
         assertEquals("registration/sign-up", result);
     }
 
     @Test
-    void signUpPageTest_sessionIdIsNotNull_returnsSignInPage() {
+    void signUpPageTest_sessionIdIsNotNull_returnsSignIn() {
         // given
         UUID sessionId = UUID.randomUUID();
 
         // when
-        String result = userController.signUpPage(sessionId, model);
+        String result = userController.signUp(sessionId, model);
 
         // then
         assertEquals("redirect:/", result);
     }
 
     @Test
-    void signInPageTest_sessionIdIsNull_returnsSignInPage() {
+    void signInPageTest_sessionIdIsNull_returnsSignIn() {
         // given
         UUID nullSessionId = null;
 
         // when
-        String result = userController.signInPage(nullSessionId, model);
+        String result = userController.signIn(nullSessionId, model);
 
         // then
         assertEquals("login/sign-in", result);
@@ -72,7 +72,7 @@ public class UserControllerTest {
         UUID nullSessionId = null;
 
         // when
-        String result = userController.indexPage(nullSessionId, model);
+        String result = userController.index(nullSessionId, model);
 
         // then
         assertEquals("redirect:/sign-in", result);
@@ -85,7 +85,7 @@ public class UserControllerTest {
         when(sessionService.getUserBySessionId(invalidSessionId)).thenReturn(null);
 
         // when
-        String result = userController.indexPage(invalidSessionId, model);
+        String result = userController.index(invalidSessionId, model);
 
         // then
         assertEquals("redirect:/sign-in", result);
