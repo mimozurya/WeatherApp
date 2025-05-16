@@ -1,11 +1,13 @@
 package weather.app.weather_app.services;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletResponse;
 import weather.app.weather_app.controllers.UserController;
 import weather.app.weather_app.dao.SessionDAO;
 
@@ -35,15 +37,16 @@ public class SessionServiceTest {
         assertEquals(0, cookie.getMaxAge());
     }
 
-//    @Test
-//    void deleteSession_callsDAOMethod() {
-//        //given
-//        UUID sessionId = UUID.randomUUID();
-//
-//        //when
-//        sessionService.deleteSession(sessionId);
-//
-//        //then
-//        verify(sessionDAO).deleteSessionById(sessionId);
-//    }
+    @Test
+    void deleteSession_callsDAOMethod() {
+        //given
+        UUID sessionId = UUID.randomUUID();
+        HttpServletResponse response = new MockHttpServletResponse();
+
+        //when
+        sessionService.deleteSession(sessionId, response);
+
+        //then
+        verify(sessionDAO).deleteSessionById(sessionId);
+    }
 }

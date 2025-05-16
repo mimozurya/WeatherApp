@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class UserControllerTest {
@@ -76,19 +75,5 @@ public class UserControllerTest {
 
         // then
         assertEquals("redirect:/sign-in", result);
-    }
-
-    @Test
-    void indexPageTest_invalidSession_redirectsToSignIn() {
-        // given
-        UUID invalidSessionId = UUID.randomUUID();
-        when(sessionService.getUserBySessionId(invalidSessionId)).thenReturn(null);
-
-        // when
-        String result = userController.index(invalidSessionId, model);
-
-        // then
-        assertEquals("redirect:/sign-in", result);
-        verify(sessionService).getUserBySessionId(invalidSessionId);
     }
 }

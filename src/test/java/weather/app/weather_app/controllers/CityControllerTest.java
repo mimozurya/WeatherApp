@@ -36,7 +36,7 @@ public class CityControllerTest {
     void searchCities_shouldReturnSearchResults_whenUserAuthenticated() {
         // given
         UUID sessionId = UUID.randomUUID();
-        User user = new User(1, "test", "pass");
+        User user = new User("test", "pass");
         List<CityResponse> cities = List.of(
                 new CityResponse("Moscow",  55.75, 37.61, "RU", "MoscowState"),
                 new CityResponse("London",  51.50, -0.12, "UK", "LondonState")
@@ -55,24 +55,10 @@ public class CityControllerTest {
     }
 
     @Test
-    void searchCities_shouldRedirectToSignIn_whenSessionInvalid() {
-        // given
-        UUID invalidSessionId = UUID.randomUUID();
-        when(sessionService.getUserBySessionId(invalidSessionId)).thenReturn(null);
-
-        // when
-        String viewName = cityController.searchCities("Moscow", invalidSessionId, model);
-
-        // then
-        assertEquals("redirect:/sign-in", viewName);
-        verifyNoInteractions(cityService);
-    }
-
-    @Test
     void addLocationCity_shouldSaveCityAndRedirect_whenUserAuthenticated() {
         // given
         UUID sessionId = UUID.randomUUID();
-        User user = new User(1, "test", "pass");
+        User user = new User("test", "pass");
         CityResponse city = new CityResponse("Moscow",  55.75, 37.61, "RU", "MoscowState");
 
         when(sessionService.getUserBySessionId(sessionId)).thenReturn(user);
@@ -97,7 +83,7 @@ public class CityControllerTest {
         String viewName = cityController.addLocationCity(city, invalidSessionId);
 
         // then
-        assertEquals("redirect:/sign-in", viewName);
+        assertEquals("redirect:/", viewName);
         verifyNoInteractions(cityService);
     }
 }

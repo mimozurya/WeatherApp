@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class SessionCleanupScheduler {
+public class SessionScheduler {
     private final SessionFactory sessionFactory;
 
     @Scheduled(fixedRate = 86400000)
